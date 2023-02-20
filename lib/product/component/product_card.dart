@@ -1,8 +1,34 @@
 import 'package:baedal/common/constant/colors.dart';
+import 'package:baedal/restaurant/model/restaurant_detail_model.dart';
 import 'package:flutter/material.dart';
 
 class ProductCard extends StatelessWidget {
-  const ProductCard({Key? key}) : super(key: key);
+  final Image image;
+  final String name;
+  final String detail;
+  final int price;
+
+  const ProductCard({
+    Key? key,
+    required this.image,
+    required this.name,
+    required this.detail,
+    required this.price,
+  }) : super(key: key);
+
+  factory ProductCard.fromModel(RestaurantProductModel model) {
+    return ProductCard(
+      image: Image.network(
+        model.imgUrl,
+        width: 110,
+        height: 110,
+        fit: BoxFit.cover,
+      ),
+      name: model.name,
+      detail: model.detail,
+      price: model.price,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,12 +37,7 @@ class ProductCard extends StatelessWidget {
         children: [
           ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: Image.asset(
-              'asset/img/food/ddeok_bok_gi.jpg',
-              width: 110,
-              height: 110,
-              fit: BoxFit.cover,
-            ),
+            child: image,
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -25,14 +46,14 @@ class ProductCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '떡볶이',
+                  name,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
                 Text(
-                  '전통 떡볶이의 정석!\n맛있습니다.',
+                  detail,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
@@ -41,7 +62,7 @@ class ProductCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  '₩ 10000',
+                  '₩$price',
                   textAlign: TextAlign.right,
                   style: TextStyle(
                     color: PRIMARY_COLOR,

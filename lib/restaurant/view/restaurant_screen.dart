@@ -33,7 +33,9 @@ class RestaurantScreen extends StatelessWidget {
             future: paginationRestaurant(),
             builder: (context, snapshot) {
               if (!snapshot.hasData) {
-                return Container();
+                return Center(
+                  child: CircularProgressIndicator(),
+                );
               }
 
               debugPrint(snapshot.data.toString());
@@ -47,7 +49,10 @@ class RestaurantScreen extends StatelessWidget {
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                            builder: (_) => RestaurantDetailScreen()),
+                          builder: (_) => RestaurantDetailScreen(
+                            id: parsedItem.id,
+                          ),
+                        ),
                       );
                     },
                     child: RestaurantCard.fromModel(parsedItem),
