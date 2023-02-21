@@ -1,5 +1,7 @@
+import 'package:baedal/common/dio/vince_dio.dart';
 import 'package:baedal/restaurant/component/restaurant_card.dart';
 import 'package:baedal/restaurant/model/restaurant_model.dart';
+import 'package:baedal/restaurant/repository/restaurant_repository.dart';
 import 'package:baedal/restaurant/view/restaurant_detail_screen.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -9,18 +11,17 @@ import '../../common/constant/data.dart';
 class RestaurantScreen extends StatelessWidget {
   const RestaurantScreen({Key? key}) : super(key: key);
 
-  Future<List> paginationRestaurant() async {
+  Future<List<RestaurantModel>> paginationRestaurant() async {
     final dio = Dio();
-    final accessToken = await storage.read(key: ACCESS_TOKEN_KEY);
-
-    final resp = await dio.get(
-      'http://$ip/restaurant',
-      options: Options(headers: {
-        'authorization': 'Bearer $accessToken',
-      }),
+    dio.interceptors.add(
+      CustomInterceptor(storage),
     );
 
-    return resp.data['data'];
+    final resp =
+        await RestaurantRepository(dio, baseUrl: 'http://$ip/restaurant')
+            .paginate();
+
+    return resp.data;
   }
 
   @override
@@ -29,9 +30,9 @@ class RestaurantScreen extends StatelessWidget {
       child: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: FutureBuilder<List>(
+          child: FutureBuilder<List<RestaurantModel>>(
             future: paginationRestaurant(),
-            builder: (context, snapshot) {
+            builder: (context, AsyncSnapshot<List<RestaurantModel>> snapshot) {
               if (!snapshot.hasData) {
                 return Center(
                   child: CircularProgressIndicator(),
@@ -42,8 +43,7 @@ class RestaurantScreen extends StatelessWidget {
 
               return ListView.separated(
                 itemBuilder: (_, index) {
-                  final item = snapshot.data![index];
-                  final parsedItem = RestaurantModel.fromJson(item);
+                  final parsedItem = snapshot.data![index];
 
                   return GestureDetector(
                     onTap: () {
