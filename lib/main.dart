@@ -2,10 +2,13 @@ import 'package:baedal/common/component/custom_text_form_field.dart';
 import 'package:baedal/common/view/splash_screen.dart';
 import 'package:baedal/user/view/login_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
   runApp(
-    _App(),
+    const ProviderScope(
+      child: _App(),
+    ),
   );
 }
 

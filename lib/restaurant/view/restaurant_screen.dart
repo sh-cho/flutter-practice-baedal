@@ -1,38 +1,24 @@
-import 'package:baedal/common/dio/vince_dio.dart';
+import 'package:baedal/common/model/cursor_pagination_model.dart';
 import 'package:baedal/restaurant/component/restaurant_card.dart';
 import 'package:baedal/restaurant/model/restaurant_model.dart';
 import 'package:baedal/restaurant/repository/restaurant_repository.dart';
 import 'package:baedal/restaurant/view/restaurant_detail_screen.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../common/constant/data.dart';
-
-class RestaurantScreen extends StatelessWidget {
+class RestaurantScreen extends ConsumerWidget {
   const RestaurantScreen({Key? key}) : super(key: key);
 
-  Future<List<RestaurantModel>> paginationRestaurant() async {
-    final dio = Dio();
-    dio.interceptors.add(
-      CustomInterceptor(storage),
-    );
-
-    final resp =
-        await RestaurantRepository(dio, baseUrl: 'http://$ip/restaurant')
-            .paginate();
-
-    return resp.data;
-  }
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       child: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: FutureBuilder<List<RestaurantModel>>(
-            future: paginationRestaurant(),
-            builder: (context, AsyncSnapshot<List<RestaurantModel>> snapshot) {
+          child: FutureBuilder<CursorPagination<RestaurantModel>>(
+            future: ref.watch(restaurantRepositoryProvider).paginate(),
+            builder: (context,
+                AsyncSnapshot<CursorPagination<RestaurantModel>> snapshot) {
               if (!snapshot.hasData) {
                 return Center(
                   child: CircularProgressIndicator(),
@@ -43,7 +29,7 @@ class RestaurantScreen extends StatelessWidget {
 
               return ListView.separated(
                 itemBuilder: (_, index) {
-                  final parsedItem = snapshot.data![index];
+                  final parsedItem = snapshot.data!.data[index];
 
                   return GestureDetector(
                     onTap: () {
@@ -61,7 +47,7 @@ class RestaurantScreen extends StatelessWidget {
                 separatorBuilder: (_, index) {
                   return SizedBox(height: 16);
                 },
-                itemCount: snapshot.data!.length,
+                itemCount: snapshot.data!.data.length,
               );
             },
           ),
