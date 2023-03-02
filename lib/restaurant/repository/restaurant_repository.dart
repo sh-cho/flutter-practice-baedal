@@ -1,4 +1,5 @@
 import 'package:baedal/common/dio/vince_dio.dart';
+import 'package:baedal/common/model/pagination_params.dart';
 import 'package:baedal/restaurant/model/restaurant_model.dart';
 import 'package:dio/dio.dart' hide Headers;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,7 +28,9 @@ abstract class RestaurantRepository {
   @Headers({
     'accessToken': 'true',
   })
-  Future<CursorPagination<RestaurantModel>> paginate();
+  Future<CursorPagination<RestaurantModel>> paginate({
+    @Queries() PaginationParams? paginationParams = const PaginationParams(),
+  });
 
   @GET('/{id}')
   @Headers({
