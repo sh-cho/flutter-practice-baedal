@@ -3,13 +3,15 @@ import 'package:baedal/common/layout/default_layout.dart';
 import 'package:baedal/product/component/product_card.dart';
 import 'package:baedal/restaurant/component/restaurant_card.dart';
 import 'package:baedal/restaurant/model/restaurant_detail_model.dart';
+import 'package:baedal/restaurant/model/restaurant_model.dart';
+import 'package:baedal/restaurant/provider/restaurant_provider.dart';
 import 'package:baedal/restaurant/repository/restaurant_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../common/constant/data.dart';
 
-class RestaurantDetailScreen extends ConsumerWidget {
+class RestaurantDetailScreen extends ConsumerStatefulWidget {
   final String id;
 
   const RestaurantDetailScreen({
@@ -18,38 +20,44 @@ class RestaurantDetailScreen extends ConsumerWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RestaurantDetailScreen> createState() =>
+      _RestaurantDetailScreenState();
+}
+
+class _RestaurantDetailScreenState
+    extends ConsumerState<RestaurantDetailScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    ref.read(restaurantProvider.notifier).getDetail(widget.id);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(restaurantDetailProvider(widget.id));
+
+    if (state == null) {
+      return DefaultLayout(
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return DefaultLayout(
       title: '불타는 떡볶이',
-      child: FutureBuilder<RestaurantDetailModel>(
-        future: ref.watch(restaurantRepositoryProvider).getRestaurantDetail(id),
-        builder: (context, AsyncSnapshot<RestaurantDetailModel> snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(snapshot.error.toString()),
-            );
-          }
-
-          if (!snapshot.hasData) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          }
-
-          final item = snapshot.data!;
-          return CustomScrollView(
-            slivers: [
-              renderTop(item),
-              renderLabel(),
-              renderProducts(item.products),
-            ],
-          );
-        },
+      child: CustomScrollView(
+        slivers: [
+          renderTop(state),
+          if (state is RestaurantDetailModel) renderLabel(),
+          if (state is RestaurantDetailModel) renderProducts(state.products),
+        ],
       ),
     );
   }
 
-  Widget renderTop(RestaurantDetailModel model) {
+  Widget renderTop(RestaurantModel model) {
     return SliverToBoxAdapter(
       child: RestaurantCard.fromModel(
         model,
